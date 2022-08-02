@@ -27,3 +27,13 @@ With ripgrep
 ```
 'cmd': ['rg', '^{PLACEHOLDER}[_A-Za-z0-9-]*\t', '--color', 'never', '-IN'],
 ```
+
+Postgresql psql
+
+```
+'cmd': [
+\  'psql', 'postgres://superuser:superuserpass@127.0.0.1:8000/tags', '-c',
+\  "\copy (select word, menu, 'empty' as empty, kind from tags where word LIKE '{PLACEHOLDER}%' order by word asc) to stdout"
+\],
+'appendTagFiles': v:false
+```

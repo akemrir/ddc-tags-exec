@@ -115,14 +115,8 @@ export class Source extends BaseSource<Params> {
   params(): Params {
     return {
       maxSize: 100,
-      // // cmd: ['rg', '^{PLACEHOLDER}[_A-Za-z0-9-]*\t', '--color', 'never', '-IN'],
       cmd: ['ug', '^{PLACEHOLDER}[_A-Za-z0-9-]*\t', '--color=never'],
       appendTagFiles: true
-      // cmd: [
-      //   'psql', 'postgres://superuser:superuserpass@127.0.0.1:8000/tags', '-c',
-      //   "\copy (select word, menu, 'empty' as empty, kind from tags where word LIKE '{PLACEHOLDER}%' order by word asc) to stdout"
-      // ],
-      // appendTagFiles: false,
     };
   }
 }
