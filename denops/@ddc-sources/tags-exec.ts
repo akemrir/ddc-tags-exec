@@ -62,7 +62,6 @@ export class Source extends BaseSource<Params> {
     if (args.sourceParams.maxSize > 0) {
       cmd.push(`| head -n ${max}`);
     }
-    // console.table(cmd);
 
     const p = Deno.run({
       cmd: cmd,
@@ -76,20 +75,9 @@ export class Source extends BaseSource<Params> {
       p.stderrOutput()
     ]);
     p.close();
-    // console.log(`state: ${JSON.stringify(state, null, 2)}`);
-    // console.log(stdout.length);
-    // console.log(stderr.length);
 
     const lines = new TextDecoder().decode(stdout).split(/\r?\n/);
     const error = new TextDecoder().decode(stderr).split(/\r?\n/);
-    // debugger;
-    // console.log("cmd");
-    // console.log(cmd);
-    // console.log("lines");
-    // console.table(lines);
-    // console.log("error");
-    // console.table(error);
-
     const candidates = lines
       .filter((line) => line.length != 0)
       .map((word: string) => {
@@ -100,14 +88,12 @@ export class Source extends BaseSource<Params> {
         } else {
           wordWithoutPath = w[0];
         }
-        // console.log({ w });
         return {
           word: wordWithoutPath,
           menu: w[1],
           kind: w[3].split(":")[1]
         };
       });
-    // console.table(candidates);
 
     return candidates;
   }
