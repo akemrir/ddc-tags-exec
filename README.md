@@ -1,4 +1,4 @@
-# ddc tags
+# ddc tags exec
 
 It uses vim tags variable with list of tag files and queries it with supplied command to get list of tags for ddc menu.
 
