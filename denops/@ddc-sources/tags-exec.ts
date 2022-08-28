@@ -1,6 +1,6 @@
 import {
   BaseSource,
-  Candidate
+  Item
 } from "https://deno.land/x/ddc_vim@v2.3.1/types.ts#^";
 import { Denops, fn } from "https://deno.land/x/ddc_vim@v2.3.1/deps.ts#^";
 import { exists } from "https://deno.land/std@0.153.0/fs/mod.ts#^";
@@ -49,7 +49,7 @@ export class Source extends BaseSource<Params> {
     denops: Denops;
     completeStr: string;
     sourceParams: Params;
-  }): Promise<Candidate[]> {
+  }): Promise<Item[]> {
     const max = Math.min(Math.max(1, args.sourceParams.maxSize), 2000);
     const cwd = await fn.getcwd(args.denops);
     const bufnr = await fn.bufnr(args.denops) as number;
