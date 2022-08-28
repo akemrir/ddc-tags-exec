@@ -2,11 +2,11 @@ import {
   BaseSource,
   Candidate,
   Context,
-} from "https://deno.land/x/ddc_vim@v2.3.0/types.ts#^";
+} from "https://deno.land/x/ddc_vim@v2.3.1/types.ts#^";
 import {
   Denops,
   fn,
-} from "https://deno.land/x/ddc_vim@v2.3.0/deps.ts#^";
+} from "https://deno.land/x/ddc_vim@v2.3.1/deps.ts#^";
 import { existsSync } from "https://deno.land/std@0.142.0/fs/mod.ts#^";
 
 type Params = {
