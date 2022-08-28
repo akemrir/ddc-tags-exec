@@ -3,7 +3,7 @@ import {
   Candidate
 } from "https://deno.land/x/ddc_vim@v2.3.1/types.ts#^";
 import { Denops, fn } from "https://deno.land/x/ddc_vim@v2.3.1/deps.ts#^";
-import { ensureFile } from "https://deno.land/std@0.153.0/fs/mod.ts#^";
+import { exists } from "https://deno.land/std@0.153.0/fs/mod.ts#^";
 
 type Params = {
   maxSize: number;
@@ -33,7 +33,7 @@ const prepareTagsList = async (
     //INFO prepend with current working directory and cleanup
     const preparedTag =
       cleaned.match("/home") == null ? pwd + "/" + cleaned : cleaned;
-    const existing = await ensureFile(preparedTag);
+    const existing = await exists(preparedTag);
 
     if (existing !== null) {
       existingTags.push(preparedTag);
