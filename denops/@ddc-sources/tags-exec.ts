@@ -1,75 +1,80 @@
 import {
   BaseSource,
-  Candidate,
-  Context,
+  Candidate
 } from "https://deno.land/x/ddc_vim@v2.3.1/types.ts#^";
-import {
-  Denops,
-  fn,
-} from "https://deno.land/x/ddc_vim@v2.3.1/deps.ts#^";
-import { existsSync } from "https://deno.land/std@0.142.0/fs/mod.ts#^";
+import { Denops, fn } from "https://deno.land/x/ddc_vim@v2.3.1/deps.ts#^";
+import { ensureFile } from "https://deno.land/std@0.153.0/fs/mod.ts#^";
 
 type Params = {
   maxSize: number;
-  cmd: string;
+  cmd: string[];
   args: string[];
+  appendTagFiles: boolean;
+};
+
+const splitTags = (tagOpt: string): string[] => {
+  if (tagOpt) {
+    return tagOpt.split(",");
+  } else {
+    return [];
+  }
+};
+
+const prepareTagsList = async (
+  denops: Denops,
+  pwd: string
+): Promise<string[]> => {
+  const tagString = (await fn.getbufvar(denops, 1, "&tags")) as string;
+  const existingTags = [];
+  const tags = splitTags(tagString);
+
+  for (const tag of tags) {
+    const cleaned = tag.replace("./", "");
+    //INFO prepend with current working directory and cleanup
+    const preparedTag =
+      cleaned.match("/home") == null ? pwd + "/" + cleaned : cleaned;
+    const existing = await ensureFile(preparedTag);
+
+    if (existing !== null) {
+      existingTags.push(preparedTag);
+    }
+  }
+  //INFO uniqueness
+  return [...new Set(existingTags)];
 };
 
 export class Source extends BaseSource<Params> {
-  private tags: string[] = [];
-
-  private getTags(tagOpt: string): string[] {
-    if (tagOpt) {
-      return tagOpt.split(",");
-    } else {
+  async gather(args: {
+    denops: Denops;
+    completeStr: string;
+    sourceParams: Params;
+  }): Promise<Candidate[]> {
+    const max = Math.min(Math.max(1, args.sourceParams.maxSize), 2000);
+    const cwd = await fn.getcwd(args.denops);
+    const tagFiles = await prepareTagsList(args.denops, cwd);
+    if (tagFiles.length < 1) {
       return [];
     }
-  }
 
-  private async prepareTagsList(denops: Denops, cwd: string): string[] {
-    this.tags = this.getTags(
-      await fn.getbufvar(denops, 1, "&tags") as string,
+    const input = args.completeStr.replaceAll(/([\\\[\]^$.*])/g, "\\$1");
+    const cmd = args.sourceParams.cmd.map((el) =>
+      el.replace("{PLACEHOLDER}", input)
     );
 
-    //INFO prepend with current working directory and cleanup
-    this.tags = this.tags.map(el => {
-      const cleaned = el.replace("./", "");
-      if (cleaned.match("home") != null) {
-        return el;
-      } else {
-        return cwd + "/" + cleaned;
-      }
-    }).filter(el => existsSync(el));
-
-    //INFO uniqueness
-    return [...new Set(this.tags)];
-  }
-
-  async gather(args: {
-    denops: Denops,
-    completeStr: string,
-    sourceParams: Params,
-  }): Promise<Candidate[]> {
-    const cwd = await fn.getcwd(args.denops);
-    const max = Math.min(Math.max(1, args.sourceParams.maxSize), 2000);
-    const tagFiles = await this.prepareTagsList(args.denops, cwd);
-    const input = args.completeStr.replaceAll(/([\\\[\]^$.*])/g, '\\$1');
-    const cmd = args.sourceParams.cmd.map(el => el.replace("{PLACEHOLDER}", input));
-
     if (args.sourceParams.appendTagFiles) {
-      tagFiles.forEach(file => cmd.push(file));
+      tagFiles.forEach((file) => cmd.push(file));
     }
     if (args.sourceParams.maxSize > 0) {
       cmd.push(`| head -n ${max}`);
     }
 
     const p = Deno.run({
-      cmd: cmd,
+      cmd,
       stdout: "piped",
       stderr: "piped",
-      stdin: "null",
+      stdin: "null"
     });
-    const [state, stdout, stderr] = await Promise.all([
+    const [_state, stdout, _stderr] = await Promise.all([
       p.status(),
       p.output(),
       p.stderrOutput()
@@ -77,7 +82,7 @@ export class Source extends BaseSource<Params> {
     p.close();
 
     const lines = new TextDecoder().decode(stdout).split(/\r?\n/);
-    const error = new TextDecoder().decode(stderr).split(/\r?\n/);
+    // const error = new TextDecoder().decode(stderr).split(/\r?\n/);
     const candidates = lines
       .filter((line) => line.length != 0)
       .map((word: string) => {
@@ -101,8 +106,9 @@ export class Source extends BaseSource<Params> {
   params(): Params {
     return {
       maxSize: 100,
-      cmd: ['ug', '^{PLACEHOLDER}[_A-Za-z0-9-]*\t', '--color=never'],
-      appendTagFiles: true
+      cmd: ["ug", "^{PLACEHOLDER}[_A-Za-z0-9-]*\t", "--color=never"],
+      appendTagFiles: true,
+      args: []
     };
   }
 }
