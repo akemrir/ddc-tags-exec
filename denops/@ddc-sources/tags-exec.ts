@@ -22,9 +22,10 @@ const splitTags = (tagOpt: string): string[] => {
 
 const prepareTagsList = async (
   denops: Denops,
-  pwd: string
+  pwd: string,
+  bufnr: number
 ): Promise<string[]> => {
-  const tagString = (await fn.getbufvar(denops, 1, "&tags")) as string;
+  const tagString = (await fn.getbufvar(denops, bufnr, "&tags")) as string;
   const existingTags = [];
   const tags = splitTags(tagString);
 
@@ -51,7 +52,8 @@ export class Source extends BaseSource<Params> {
   }): Promise<Candidate[]> {
     const max = Math.min(Math.max(1, args.sourceParams.maxSize), 2000);
     const cwd = await fn.getcwd(args.denops);
-    const tagFiles = await prepareTagsList(args.denops, cwd);
+    const bufnr = await fn.bufnr(args.denops) as number;
+    const tagFiles = await prepareTagsList(args.denops, cwd, bufnr);
     if (tagFiles.length < 1) {
       return [];
     }
