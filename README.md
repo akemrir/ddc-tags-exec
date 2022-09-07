@@ -33,6 +33,12 @@ call ddc#custom#patch_global('sourceParams', {
   \ })
 ```
 
+Ugrep also provides fuzzy matching with Levenstein algorithm.
+  \   'cmd': ['ug', '-Z3', '^{PLACEHOLDER}[_A-Za-z0-9-]*\t', '--color=never'],
+
+To use with ddc fuzzy filter:
+https://github.com/tani/ddc-fuzzy
+
 With ripgrep
 
 ```
