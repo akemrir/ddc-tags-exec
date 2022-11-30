@@ -39,6 +39,31 @@ Ugrep also provides fuzzy matching with Levenstein algorithm.
 To use with ddc fuzzy filter:
 https://github.com/tani/ddc-fuzzy
 
+With ugrep but with splitting strategy
+
+```
+  \ 'tags-exec': {
+  \   'maxSize': 30,
+  \   'cmd': ['ug', '--bool', '^{PLACEHOLDER}[_A-Za-z0-9-]*\t', '--color=never'],
+  \   'appendTagFiles': v:true,
+  \   'splitByRegexp': '(?=[A-Z])|_',
+  \   'splitUnionString': ' ',
+```
+
+Regexp: (?=[A-Z])|_
+This strategy leverages split and join
+
+PascalCasedText -> Pascal Cased Text
+require_relative -> require relative
+
+Then it is used with ugrep --bool
+Bool makes this construction connected like with 'and'
+
+Pascal and Cased and Text
+
+ug --bool '^Pascal Cased Text[_A-Za-z0-9-]*\t --color=never tags
+ug --bool '^require_relative[_A-Za-z0-9-]*\t --color=never tags
+
 With ripgrep
 
 ```
