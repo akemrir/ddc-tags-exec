@@ -1,9 +1,9 @@
 import {
   BaseSource,
   Item
-} from "https://deno.land/x/ddc_vim@v2.5.1/types.ts#^";
-import { Denops, fn } from "https://deno.land/x/ddc_vim@v2.5.1/deps.ts#^";
-import { exists } from "https://deno.land/std@0.157.0/fs/mod.ts#^";
+} from "https://deno.land/x/ddc_vim@v3.3.0/types.ts#^";
+import { Denops, fn } from "https://deno.land/x/ddc_vim@v3.3.0/deps.ts#^";
+import { exists } from "https://deno.land/std@0.166.0/fs/mod.ts#^";
 
 type Params = {
   maxSize: number;
@@ -52,13 +52,20 @@ export class Source extends BaseSource<Params> {
   }): Promise<Item[]> {
     const max = Math.min(Math.max(1, args.sourceParams.maxSize), 2000);
     const cwd = await fn.getcwd(args.denops);
-    const bufnr = await fn.bufnr(args.denops) as number;
+    const bufnr = (await fn.bufnr(args.denops)) as number;
     const tagFiles = await prepareTagsList(args.denops, cwd, bufnr);
     if (tagFiles.length < 1) {
       return [];
     }
 
-    const input = args.completeStr.replaceAll(/([\\\[\]^$.*])/g, "\\$1");
+    let input = args.completeStr.replaceAll(/([\\\[\]^$.*])/g, "\\$1");
+    const splitUnionString = args.sourceParams.splitUnionString;
+    const splitByRegexp = args.sourceParams.splitByRegexp;
+
+    if (splitByRegexp != "" && splitUnionString != "") {
+      input = input.split(new RegExp(splitByRegexp)).join(splitUnionString);
+    }
+
     const cmd = args.sourceParams.cmd.map((el) =>
       el.replace("{PLACEHOLDER}", input)
     );
@@ -95,11 +102,13 @@ export class Source extends BaseSource<Params> {
         } else {
           wordWithoutPath = w[0];
         }
-        return {
+        const returned = {
           word: wordWithoutPath,
           menu: w[1],
           kind: w[3].split(":")[1]
         };
+        // console.table(returned);
+        return returned;
       });
 
     return candidates;
@@ -110,7 +119,9 @@ export class Source extends BaseSource<Params> {
       maxSize: 100,
       cmd: ["ug", "^{PLACEHOLDER}[_A-Za-z0-9-]*\t", "--color=never"],
       appendTagFiles: true,
-      args: []
+      args: [],
+      splitByRegexp: "",
+      splitUnionString: ""
     };
   }
 }
