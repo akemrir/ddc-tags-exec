@@ -96,16 +96,21 @@ export class Source extends BaseSource<Params> {
       .filter((line) => line.length != 0)
       .map((word: string) => {
         const w = word.split("\t");
-        let wordWithoutPath;
+        let wordWithoutPath, kindWithoutPath;
         if (w[0].includes(":")) {
           wordWithoutPath = w[0].split(":")[1];
         } else {
           wordWithoutPath = w[0];
         }
+        if (w[3].includes(":")) {
+          kindWithoutPath = w[3].split(":")[1];
+        } else {
+          kindWithoutPath = w[3];
+        }
         const returned = {
           word: wordWithoutPath,
           menu: w[1],
-          kind: w[3].split(":")[1]
+          kind: kindWithoutPath
         };
         // console.table(returned);
         return returned;
