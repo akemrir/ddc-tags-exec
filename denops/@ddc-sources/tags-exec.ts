@@ -20,6 +20,14 @@ const splitTags = (tagOpt: string): string[] => {
   }
 };
 
+const splitIfContains = (content: string, separator: string): string => {
+  if (content.includes(separator)) {
+    return content.split(separator).pop() || content;
+  } else {
+    return content;
+  }
+}
+
 const prepareTagsList = async (
   denops: Denops,
   pwd: string,
@@ -96,21 +104,10 @@ export class Source extends BaseSource<Params> {
       .filter((line) => line.length != 0)
       .map((word: string) => {
         const w = word.split("\t");
-        let wordWithoutPath, kindWithoutPath;
-        if (w[0].includes(":")) {
-          wordWithoutPath = w[0].split(":")[1];
-        } else {
-          wordWithoutPath = w[0];
-        }
-        if (w[3].includes(":")) {
-          kindWithoutPath = w[3].split(":")[1];
-        } else {
-          kindWithoutPath = w[3];
-        }
         const returned = {
-          word: wordWithoutPath,
+          word: splitIfContains(w[0], ":"),
           menu: w[1],
-          kind: kindWithoutPath
+          kind: splitIfContains(w[3], ":")
         };
         // console.table(returned);
         return returned;
