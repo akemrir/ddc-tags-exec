@@ -1,15 +1,17 @@
 import {
   BaseSource,
   Item
-} from "https://deno.land/x/ddc_vim@v3.3.0/types.ts#^";
-import { Denops, fn } from "https://deno.land/x/ddc_vim@v3.3.0/deps.ts#^";
-import { exists } from "https://deno.land/std@0.166.0/fs/mod.ts#^";
+} from "https://deno.land/x/ddc_vim@v3.4.0/types.ts#^";
+import { Denops, fn } from "https://deno.land/x/ddc_vim@v3.4.0/deps.ts#^";
+import { exists } from "https://deno.land/std@0.175.0/fs/mod.ts#^";
 
 type Params = {
   maxSize: number;
   cmd: string[];
   args: string[];
   appendTagFiles: boolean;
+  splitByRegexp: string;
+  splitUnionString: string;
 };
 
 const splitTags = (tagOpt: string): string[] => {
@@ -59,7 +61,7 @@ export class Source extends BaseSource<Params> {
     sourceParams: Params;
   }): Promise<Item[]> {
     const max = Math.min(Math.max(1, args.sourceParams.maxSize), 2000);
-    const cwd = await fn.getcwd(args.denops);
+    const cwd = await fn.getcwd(args.denops) as string;
     const bufnr = (await fn.bufnr(args.denops)) as number;
     const tagFiles = await prepareTagsList(args.denops, cwd, bufnr);
     if (tagFiles.length < 1) {
@@ -109,7 +111,6 @@ export class Source extends BaseSource<Params> {
           menu: w[1],
           kind: splitIfContains(w[3], ":")
         };
-        // console.table(returned);
         return returned;
       });
 
